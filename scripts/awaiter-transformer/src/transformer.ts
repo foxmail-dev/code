@@ -24,7 +24,9 @@ import {
   PropertyAccessExpression,
   ScriptTarget,
   ModuleKind,
+  createWrappedNode,
 } from "ts-morph";
+import * as ts from "typescript";
 import { 
   TransformOptions, 
   TransformResult, 
@@ -63,11 +65,25 @@ export class AwaiterTransformer {
       semanticRenaming: options.semanticRenaming ?? true,
       removeRuntimeHelpers: options.removeRuntimeHelpers ?? true,
       format: options.format ?? true,
+      allowDispatchFallback: options.allowDispatchFallback ?? true,
     };
 
     this.stats = this.initStats();
     this.errors = [];
     this.warnings = [];
+  }
+
+  private resolveTarget(target?: string): ScriptTarget {
+    switch (target) {
+      case "ES2017": return ScriptTarget.ES2017;
+      case "ES2018": return ScriptTarget.ES2018;
+      case "ES2019": return ScriptTarget.ES2019;
+      case "ES2020": return ScriptTarget.ES2020;
+      case "ES2021": return ScriptTarget.ES2021;
+      case "ES2022": return ScriptTarget.ES2022;
+      case "ESNext": return ScriptTarget.ESNext;
+      default: return ScriptTarget.ES2020;
+    }
   }
 
   private initStats(): TransformStats {
@@ -79,7 +95,8 @@ export class AwaiterTransformer {
       nestedAwaitersFound: 0,
       tryCatchBlocksRestored: 0,
       loopsRestored: 0,
-      conditionalsRestored: 0,
+      awaitsRestored: 0,
+      fallbackMachines: 0,
     };
   }
 
@@ -99,6 +116,7 @@ export class AwaiterTransformer {
       return {
         success: this.errors.filter(e => e.severity === "error").length === 0,
         code,
+        issues: [...this.errors, ...this.warnings],
         errors: this.errors,
         warnings: this.warnings,
         stats: this.stats,
@@ -108,6 +126,7 @@ export class AwaiterTransformer {
       return {
         success: false,
         code: "",
+        issues: [...this.errors, ...this.warnings],
         errors: this.errors,
         warnings: this.warnings,
         stats: this.stats,
@@ -131,6 +150,7 @@ export class AwaiterTransformer {
       return {
         success: this.errors.filter(e => e.severity === "error").length === 0,
         code,
+        issues: [...this.errors, ...this.warnings],
         errors: this.errors,
         warnings: this.warnings,
         stats: this.stats,
@@ -140,6 +160,7 @@ export class AwaiterTransformer {
       return {
         success: false,
         code: "",
+        issues: [...this.errors, ...this.warnings],
         errors: this.errors,
         warnings: this.warnings,
         stats: this.stats,
@@ -246,7 +267,7 @@ export class AwaiterTransformer {
       const cfg = this.buildControlFlowGraph(generatorBody);
       
       // 重建结构化代码
-      const asyncBody = this.rebuildStructuredCode(cfg, info.generatorFn);
+      const asyncBody = this.rebuildStructuredCode(cfg, info.generatorFn as FunctionExpression);
       
       // 创建 async 函数表达式替换 __awaiter 调用
       this.replaceWithAsyncFunction(info, asyncBody);
@@ -257,7 +278,7 @@ export class AwaiterTransformer {
     }
   }
 
-  private extractGeneratorBody(generatorFn: FunctionExpression): Block | null {
+  private extractGeneratorBody(generatorFn: FunctionExpression | ArrowFunction): Block | null {
     const generatorBody = generatorFn.getBody();
     if (!generatorBody || !Node.isBlock(generatorBody)) return null;
 
@@ -275,7 +296,7 @@ export class AwaiterTransformer {
     if (!generatorCallExpr) return null;
 
     // __generator 的第二个参数是生成器函数体
-    const args = generatorCallExpr.getArguments();
+    const args = (generatorCallExpr as CallExpression).getArguments();
     if (args.length < 2) return null;
 
     const generatorBodyFn = args[1];
@@ -528,7 +549,7 @@ export class AwaiterTransformer {
     return loops;
   }
 
-  private rebuildStructuredCode(cfg: ControlFlowGraph, generatorFn: FunctionExpression): Block {
+  private rebuildStructuredCode(cfg: ControlFlowGraph, generatorFn: FunctionExpression): string {
     // 这里实现核心的控制流重建逻辑
     // 为简化起见，先实现基本的线性转换
     const statements: Statement[] = [];
@@ -553,12 +574,8 @@ export class AwaiterTransformer {
       }
     }
     
-    // 创建新的块
-    const newBlock = this.sourceFile!.createBlock(statements, { 
-      isAmbient: false 
-    });
-    
-    return newBlock;
+    // 将语句转换为文本
+    return statements.map(s => s.getText()).join('\n');
   }
 
   private topologicalSort(cfg: ControlFlowGraph): number[] {
@@ -629,26 +646,30 @@ export class AwaiterTransformer {
     if (!Node.isNumericLiteral(first)) return null;
     
     const opcode = parseInt(first.getText());
+    const sourceFile = this.sourceFile!;
     
     switch (opcode) {
       case 2: // return value
         if (elements.length >= 2) {
           const value = elements[1];
-          return this.sourceFile!.createReturnStatement(value.getText());
+          const statements = sourceFile.addStatements([`return ${value.getText()};`]);
+          return statements[statements.length - 1];
         }
-        return this.sourceFile!.createReturnStatement();
+        const emptyReturns = sourceFile.addStatements(['return;']);
+        return emptyReturns[emptyReturns.length - 1];
         
       case 3: // jump (continue/break/label)
         // 这里需要更复杂的上下文分析来决定是 continue、break 还是 goto
         // 暂时作为注释保留
-        return this.sourceFile!.createStatement(`// jump to label ${elements[1]?.getText() || "?"}`);
+        const commentStmts = sourceFile.addStatements([`// jump to label ${elements[1]?.getText() || "?"}`]);
+        return commentStmts[commentStmts.length - 1];
         
       case 4: // yield await
         if (elements.length >= 2) {
           const awaited = elements[1];
           // 这是 await 表达式，需要包装在赋值或表达式中
-          const awaitExpr = this.sourceFile!.createAwaitExpression(awaited.getText());
-          return this.sourceFile!.createExpressionStatement(awaitExpr.getText());
+          const awaitStmts = sourceFile.addStatements([`await ${awaited.getText()};`]);
+          return awaitStmts[awaitStmts.length - 1];
         }
         return null;
         
@@ -663,7 +684,7 @@ export class AwaiterTransformer {
     }
   }
 
-  private replaceWithAsyncFunction(info: AwaiterCallInfo, asyncBody: Block): void {
+  private replaceWithAsyncFunction(info: AwaiterCallInfo, asyncBody: string): void {
     const callExpr = info.callExpression;
     const generatorFn = info.generatorFn;
     
@@ -673,7 +694,8 @@ export class AwaiterTransformer {
     const typeParams = generatorFn.getTypeParameters()?.map(tp => tp.getText()).join(", ") || "";
     const typeParamText = typeParams ? `<${typeParams}>` : "";
     
-    const asyncFnText = `async function${typeParamText}(${paramTexts}) ${asyncBody.getText()}`;
+    // 将语句包装在块中
+    const asyncFnText = `async function${typeParamText}(${paramTexts}) {\n${asyncBody}\n}`;
     
     callExpr.replaceWithText(asyncFnText);
   }
@@ -755,6 +777,7 @@ export class AwaiterTransformer {
       file: this.sourceFile?.getFilePath() || "unknown",
       node,
       message,
+      severity: "warning",
     });
   }
 

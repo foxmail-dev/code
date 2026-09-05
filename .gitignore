@@ -1,3 +1,52 @@
-**/node_modules/
-**/dist/
-**/package-lock.json
+```
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.python-version
+
+# Logs
+*.log
+
+# Environment specific
+.env
+.env.local
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.jest/
+jest.config.js
+
+# TypeScript/JavaScript
+*.tsbuildinfo
+```

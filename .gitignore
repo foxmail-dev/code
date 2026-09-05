@@ -1,42 +1,4 @@
-# Dependencies
-**/node_modules/
-
-# Build outputs
-**/dist/
-**/build/
-**/target/
-
-# TypeScript
-**/*.tsbuildinfo
-**/*.js.map
-**/*.d.ts
-
-# Logs
-**/*.log
-
-# Environment
-**/.env
-**/.env.local
-**/*.env.*
-
-# Editors
-**/.vscode/
-**/.idea/
-**/*.swp
-**/*.swo
-
-# OS
-**/.DS_Store
-**/Thumbs.db
-
-# Python (if present)
-**/__pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
-**/.Python
-**/venv/
-**/.venv/
-
-## npm
-**/package-lock.json
+```
+# Documentation
+docs/summary/awaiter_analysis.md
+```

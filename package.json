@@ -1,7 +1,23 @@
 {
   "dependencies": {
+    "@babel/core": "^7.29.7",
     "@babel/generator": "^8.0.0",
     "@babel/parser": "^8.0.4",
-    "@babel/traverse": "^8.0.4"
-  }
+    "@babel/traverse": "^8.0.4",
+    "@babel/types": "^7.29.8"
+  },
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "## 目录内容",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

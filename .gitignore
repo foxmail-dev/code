@@ -1,34 +1,26 @@
 ```
 # Dependencies
 node_modules/
-package-lock.json
 
-# Build artifacts
+# Build outputs
 dist/
 build/
 target/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.ENV
-.python-version
+# TypeScript
+*.tsbuildinfo
+*.js.map
+*.d.ts
 
 # Logs
 *.log
 
-# Environment specific
+# Environment
 .env
 .env.local
-.env.*
+*.env.*
 
-# IDE
+# Editors
 .vscode/
 .idea/
 *.swp
@@ -38,15 +30,14 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Testing
-.jest/
-jest.config.js
-
-# TypeScript/JavaScript
-*.tsbuildinfo
+# Python (if present)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+.env
+.env.local
 ```

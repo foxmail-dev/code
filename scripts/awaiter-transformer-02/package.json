@@ -1,0 +1,32 @@
+{
+  "name": "awaiter-transformer-02",
+  "version": "1.0.0",
+  "description": "AST-based transformer to convert __awaiter/__generator patterns to native async/await (Solution 2)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "typescript",
+    "async-await",
+    "ast",
+    "transformer",
+    "codegen"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ts-morph": "^23.0.0"
+  }
+}

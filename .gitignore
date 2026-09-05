@@ -1,70 +1,14 @@
 ```
+# Build outputs
+test/typescript/output/
+
 # Dependencies
 node_modules/
-
-# Build artifacts
-scripts/output/
-scripts/output_strict/
-
-# Package lock
 package-lock.json
 
-# Logs
-*.log
+# Compiled JavaScript files
+*.js
 
-# Environment
-.env
-.env.local
-.env.*
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
-dist/
-build/
-*.dist-info/
-
-# Compressed
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
-
+# TypeScript build cache
+*.tsbuildinfo
 ```

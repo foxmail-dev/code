@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "lib": ["ES2015", "DOM"],
+    "outDir": "./output",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "output"]
+}
